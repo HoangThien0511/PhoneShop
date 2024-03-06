@@ -12,7 +12,7 @@ const HeaderComponent = () => {
   return (
     <div>
         {/* wrapper thay thế cho row */}
-       <WrapperHeader gutter={16}>
+       <WrapperHeader>
 
         <Col span={6}>
             <WrapperTextHeader>
