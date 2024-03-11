@@ -3,7 +3,7 @@ import React from 'react'
 const TypeProduct = ({name}) => {
   return (
     <div >
-     <h3>{name}</h3>
+     {name}
     </div>
   )
 }
