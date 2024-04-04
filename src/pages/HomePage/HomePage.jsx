@@ -15,7 +15,7 @@ const HomePage = () => {
 
   return (
     <>
-       <div style={{padding: '0 120px'}} >
+       <div style={{width:'1270px', margin:'0 auto'}} >
 
 <WrapperTypeProduct >
     {
