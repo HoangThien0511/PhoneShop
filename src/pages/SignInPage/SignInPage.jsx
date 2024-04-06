@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { WrapperContainerLeft, WrapperContainerRight, WrapperTextLight } from './style'
 import InputForm from '../../components/InputForm/InputForm'
 import ButtonComponent from '../../components/ButtonComponent/ButtonComponent'
@@ -6,19 +6,41 @@ import { Divider, Image } from 'antd'
 import imageLogo from '../../assets/images/logo-login.png'
 import { useNavigate } from 'react-router-dom'
 import { EyeFilled, EyeInvisibleFilled } from '@ant-design/icons'
+import { jwtDecode } from "jwt-decode";
 
 import * as UserService from '../../services/UserService'
 import { useMutationHooks } from '../../hooks/useMutationHook'
 import Loading from '../../components/LoadingComponent/Loading'
-
+import { useDispatch } from 'react-redux'
+import { updateUser } from '../../redux/slides/userSlide'
 
 const SignInPage = () => {
   const navigate=useNavigate()
-
+  const dispatch = useDispatch()
   const mutation = useMutationHooks(
    data => UserService.loginUser(data)
   )
-  const {data,isPending} = mutation
+  const {data,isPending,isSuccess} = mutation
+  useEffect(()=>{
+    if(isSuccess && data?.status !== 'ERR' ){
+      navigate('/')
+      localStorage.setItem('access_token',data?.access_token)
+      if(data?.access_token){
+        const decoded=jwtDecode(data?.access_token)
+        console.log('decode',decoded)
+        if(decoded?.id){  
+            handleGetDetailsUser(decoded?.id, data?.access_token )
+        }
+
+      }
+    }
+  },[isSuccess])
+
+  const handleGetDetailsUser=async(id,token)=> {
+    const res= await UserService.getDetailsUser(id, token)
+    dispatch(updateUser({...res?.data,access_token:token}))
+    console.log('res',res)
+  }
   console.log('mutation',mutation)
   //Chuyen huong
   const handleNavigateSignUp=()=>{
