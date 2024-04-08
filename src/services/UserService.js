@@ -57,6 +57,8 @@ export const refreshToken = async (refreshToken) => {
 
 export const logoutUser = async () => {
     const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/log-out`)
+    localStorage.removeItem("access_token");
+
     return res.data
 }
 

@@ -1,94 +1,140 @@
-import { Badge, Col, Row,Popover } from 'antd'
-import React, { useState } from 'react'
-import { WrapperHeader, WrapperTextHeader,WrapperHeaderAccount,WrapperHeaderSmall, WrapperContentPopup } from './style'
-import * as UserService from '../../services/UserService'
+import { Badge, Button, Col, Popover } from 'antd'
+import React from 'react'
+import { WrapperContentPopup, WrapperHeader, WrapperHeaderAccount, WrapperTextHeader, WrapperHeaderSmall } from './style'
 import {
-    UserOutlined,
-    CaretDownOutlined,
-    ShoppingCartOutlined
-  } from '@ant-design/icons';
-  import { useDispatch, useSelector } from 'react-redux';
-
-import ButtonInputSearch from '../ButtonInputSearch/ButtonInputSearch';
+  UserOutlined,
+  CaretDownOutlined,
+  ShoppingCartOutlined
+} from '@ant-design/icons';
+import ButttonInputSearch from '../ButtonInputSearch/ButtonInputSearch';
 import { useNavigate } from 'react-router-dom';
-import { resetUser } from '../../redux/slides/userSlide';
+import { useDispatch, useSelector } from 'react-redux';
+import * as UserService from '../../services/UserService'
+import { resetUser } from '../../redux/slides/userSlide'
+import { useState } from 'react';
 import Loading from '../LoadingComponent/Loading';
+import { useEffect } from 'react';
 
 
-const HeaderComponent = () => {
-  const dispatch = useDispatch()
-  const [loading, setLoading] = useState(false)
-
-  const navigate=useNavigate()
+const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
+  const navigate = useNavigate()
   const user = useSelector((state) => state.user)
-  const handleNavigateLogin=()=> {
+  const dispatch = useDispatch()
+  const [userName, setUserName] = useState('')
+  const [userAvatar, setUserAvatar] = useState('')
+  const [search,setSearch] = useState('')
+  const [isOpenPopup, setIsOpenPopup] = useState(false)
+  const order = useSelector((state) => state.order)
+  const [loading, setLoading] = useState(false)
+  const handleNavigateLogin = () => {
     navigate('/sign-in')
   }
-  const handleLogout=async()=>{
-    localStorage.removeItem("access_token");
+
+  const handleLogout = async () => {
     setLoading(true)
     await UserService.logoutUser()
     dispatch(resetUser())
     setLoading(false)
   }
 
-  const content= (
-    <div>
-      <WrapperContentPopup onClick={handleLogout}>Đăng xuất</WrapperContentPopup>
-      <WrapperContentPopup>Thông tin người dùng</WrapperContentPopup>
-    </div>
-  )
-  return (
-    <div>
-        {/* wrapper thay thế cho row */}
-       <WrapperHeader>
+  useEffect(() => {
+    setLoading(true)
+    setUserName(user?.name)
+    setUserAvatar(user?.avatar)
+    setLoading(false)
+  }, [user?.name, user?.avatar])
 
-        <Col span={6}>
-            <WrapperTextHeader>
-                EzLux
-            </WrapperTextHeader>
+  const content = (
+    <div>
+      <WrapperContentPopup onClick={() => handleClickNavigate('profile')}>Thông tin người dùng</WrapperContentPopup>
+      {user?.isAdmin && (
+
+        <WrapperContentPopup onClick={() => handleClickNavigate('admin')}>Quản lí hệ thống</WrapperContentPopup>
+      )}
+      <WrapperContentPopup onClick={() => handleClickNavigate(`my-order`)}>Đơn hàng của tôi</WrapperContentPopup>
+      <WrapperContentPopup onClick={() => handleClickNavigate()}>Đăng xuất</WrapperContentPopup>
+    </div>
+  );
+  const handleNavigateHome=()=>{
+      navigate('/')
+  }
+
+  const handleClickNavigate = (type) => {
+    if(type === 'profile') {
+      navigate('/profile-user')
+    }else if(type === 'admin') {
+      navigate('/system/admin')
+    }else if(type === 'my-order') {
+      navigate('/my-order',{ state : {
+          id: user?.id,
+          token : user?.access_token
+        }
+      })
+    }else {
+      handleLogout()
+    }
+    setIsOpenPopup(false)
+  }
+
+
+
+  return (
+    <div >
+      <WrapperHeader style={{ justifyContent: isHiddenSearch && isHiddenSearch ? 'space-between' : 'unset' }}>
+        <Col span={5}>
+          <WrapperTextHeader onClick={handleNavigateHome}>Ezlux</WrapperTextHeader>
         </Col>
-        <Col span={12}>
-            <ButtonInputSearch size="large"
-            
+        {!isHiddenSearch && (
+          <Col span={13}>
+            <ButttonInputSearch
+              size="large"
+              bordered={false}
               textbutton="Tìm kiếm"
               placeholder="input search text"
-
-               
-    /></Col>
-        <Col span={6} style={{display:'flex',gap:'20px',alignItems:'center'}}>
-        <Loading isPending={loading}>
-       <WrapperHeaderAccount>
-       <UserOutlined style={{fontSize: '30px'}} />
-        {user?.email ? (
-          <>
-              <Popover content={content} trigger="click">
-                <div style={{cursor: 'pointer'}}>{user.email}</div>
-              </Popover>
-          </>
-        ):(
-
-            <div onClick={handleNavigateLogin} style={{cursor:'pointer'}}>
-                <WrapperHeaderSmall>Đăng nhập/Đăng ký</WrapperHeaderSmall>
-                
-           
-            <div>
-            <WrapperHeaderSmall>Tài Khoản</WrapperHeaderSmall>
-            <CaretDownOutlined />
-            </div>
-            </div>
+              backgroundColorButton="#5a20c1"
+            />
+          </Col>
         )}
-       </WrapperHeaderAccount>
-       </Loading>
-        <div>
-          <Badge count={4} size='small'>
-          <ShoppingCartOutlined style={{fontSize:'30px',color:'#fff'}} />
-
-          </Badge>
-      <WrapperHeaderSmall>Giỏ hàng</WrapperHeaderSmall>
-      </div>
+        <Col span={6} style={{ display: 'flex', gap: '54px', alignItems: 'center' }}>
+          <Loading isPending={loading}>
+            <WrapperHeaderAccount>
+              {userAvatar ? (
+                <img src={userAvatar} alt="avatar" style={{
+                  height: '30px',
+                  width: '30px',
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }} />
+              ) : (
+                <UserOutlined style={{ fontSize: '30px' }} />
+              )}
+              {user?.access_token ? (
+                <>
+                  <Popover content={content} trigger="click" open={isOpenPopup}>
+                    <div style={{ cursor: 'pointer',maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }} onClick={() => setIsOpenPopup((prev) => !prev)}>{userName?.length ? userName : user?.email}</div>
+                  </Popover>
+                </>
+              ) : (
+                <div onClick={handleNavigateLogin} style={{ cursor: 'pointer' }}>
+                  <WrapperHeaderSmall>Đăng nhập/Đăng ký</WrapperHeaderSmall>
+                  <div>
+                    <WrapperHeaderSmall>Tài khoản</WrapperHeaderSmall>
+                    <CaretDownOutlined />
+                  </div>
+                </div>
+              )}
+            </WrapperHeaderAccount>
+          </Loading>
+          {!isHiddenCart && (
+            <div onClick={() => navigate('/order')} style={{cursor: 'pointer'}}>
+              <Badge count={order?.orderItems?.length} size="small">
+                <ShoppingCartOutlined style={{ fontSize: '30px', color: '#fff' }} />
+              </Badge>
+              <WrapperHeaderSmall>Giỏ hàng</WrapperHeaderSmall>
+            </div>
+          )}
         </Col>
-    </WrapperHeader>
+      </WrapperHeader>
     </div>
   )
 }
