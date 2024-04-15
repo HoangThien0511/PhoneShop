@@ -1,3 +1,4 @@
+import { triggerFocus } from "antd/es/input/Input";
 import HomePage from "../pages/HomePage/HomePage";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
 import OrderPage from "../pages/OrderPage/OrderPage";
@@ -7,6 +8,7 @@ import ProfilePage from "../pages/Profile/ProfilePage";
 import SignInPage from "../pages/SignInPage/SignInPage";
 import SignUpPage from "../pages/SignUpPage/SignUpPage";
 import TypeProductPage from "../pages/TypeProductPage/TypeProductPage";
+import AdminPage from "../pages/AdminPage/AdminPage";
 
  export const routes = [
     { 
@@ -47,7 +49,13 @@ import TypeProductPage from "../pages/TypeProductPage/TypeProductPage";
     {
         path: '/profile-user',
         page: ProfilePage,
-        isShowHeader: true
+        isShowHeader: triggerFocus
+    },
+    {
+        path: '/system/admin',
+        page: AdminPage,
+        isShowHeader:false,
+        isPrivate: true
     },
     { 
         path:'/*',

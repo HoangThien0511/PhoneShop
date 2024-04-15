@@ -67,9 +67,10 @@ function App() {
           <Routes>
             {routes.map((route) => {
               const Page = route.page
+              const isCheckAuth= !route.isPrivate || user.isAdmin
               const Layout = route.isShowHeader ? DefaultComponent : Fragment
               return (
-                <Route key={route.path} path={route.path} element={
+                <Route key={route.path} path={isCheckAuth ? route.path: undefined} element={
                   <Layout>
                     <Page />
                   </Layout>
